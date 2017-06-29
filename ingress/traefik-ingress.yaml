@@ -8,9 +8,25 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - host: traefikconsole 
+  - host: traefikconsole
     http:
       paths:
       - backend:
           serviceName: traefik-web-ui
           servicePort: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jupyter-ui
+  namespace: jupyterhub
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: jupyterhub.fedcloud-tf.fedcloud.eu
+    http:
+      paths:
+      - backend:
+          serviceName: jupyterhub-ui
+          servicePort: 8000
