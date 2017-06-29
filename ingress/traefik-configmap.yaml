@@ -9,16 +9,10 @@ data:
     # traefik.toml
     defaultEntryPoints = ["http","https"]
     [entryPoints]
-      [entryPoints.http]
-      address = ":80"
-      [entryPoints.http.redirect]
-      entryPoint = "https"
       [entryPoints.https]
       address = ":443"
-      [entryPoints.https.tls]
+        [entryPoints.https.tls]
     [kubernetes]
-    [web]
-    address = ":8080"
     [acme]
     email = "enol.fernandez@egi.eu"
     storageFile = "/acme/acme.json"
@@ -26,4 +20,6 @@ data:
     onDemand = true
     onHostRule = true
     [[acme.domains]]
-    main = "jupyterhub.fedcloud-tf.fedcloud.eu"
+      main = "jupyterhub.fedcloud-tf.fedcloud.eu"
+    [web]
+    address = ":8080"
