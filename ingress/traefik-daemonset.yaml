@@ -35,7 +35,8 @@ spec:
         args:
         - --web
         - --kubernetes
-        - --configFile=/etc/traefik/traefik.toml
+        - --configFile=/config/traefik.toml
+        - --loglevel=DEBUG
       volumes:
         - name: config
           configMap:
