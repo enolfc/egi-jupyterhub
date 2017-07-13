@@ -35,7 +35,7 @@
           - name: KUBESPAWN_NFS_SERVER
             value: '<FILER_IP>'
           - name: KUBESPAWN_IMAGE
-            value: '<REPOSITORY_IMAGE_PATH>/<SINGLE_USER_IMAGE>'
+            value: 'enolfc/notebook'
           - name: KUBESPAWN_CPU_LIMIT
             value: '3000m'
           - name: KUBESPAWN_CPU_REQUEST
