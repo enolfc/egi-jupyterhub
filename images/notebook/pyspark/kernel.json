@@ -1,0 +1,19 @@
+{
+  "argv": [
+     "bash",
+     "-c",
+     "source \"/opt/conda/envs/python2/bin/activate\" \"/opt/conda/envs/python2\" && exec /opt/conda/envs/python2/bin/python -m ipykernel -f {connection_file}"
+  ],
+  "display_name": "pyspark",
+  "language": "python",
+  "env": {
+	"CAPTURE_STANDARD_OUT": "true",
+	"CAPTURE_STANDARD_ERR": "true",
+	"SEND_EMPTY_OUTPUT": "false",
+	"LD_LIBRARY_PATH": "/opt/hadoop/lib/native",
+	"SPARK_HOME": "/opt/spark",
+	"PYTHONPATH": "/opt/spark/python/:/opt/spark/python/lib/py4j-0.10.4-src.zip",
+	"PYTHONSTARTUP": "/opt/spark/python/pyspark/shell.py",
+	"PYSPARK_SUBMIT_ARGS": "--master spark://spark-master:7077 --executor-memory 512m --driver-memory 512m pyspark-shell"
+  }
+}
