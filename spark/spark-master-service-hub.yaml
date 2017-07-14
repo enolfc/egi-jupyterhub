@@ -1,0 +1,10 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: spark-master 
+  namespace: jupyterhub
+spec:
+  type: ExternalName
+  externalName: spark-master.spark-cluster.svc.cluster.local
+  ports:
+  - port: 7077
