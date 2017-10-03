@@ -34,7 +34,7 @@
       c.KubeSpawner.start_timeout = 60 * 8
 
       c.KubeSpawner.debug = os.environ.get("JHUB_SPWN_DEBUG", "") == "TRUE"
-      c.KubeSpawner.pod_name_template = "notebook-{username}"
+      c.KubeSpawner.pod_name_template = "notebook-{userid}"
       c.KubeSpawner.hub_connect_ip = os.environ.get("KSPAWN_HUB_IP", None)
       c.KubeSpawner.namespace = "jupyterhub"
       c.KubeSpawner.singleuser_image_spec = os.environ.get("KUBESPAWN_IMAGE",
@@ -49,17 +49,16 @@
       c.KubeSpawner.volumes = [
           # the notebook dir
           {
-              "name": "{username}-vol",
-              "nfs": {"path": "/exports/notebooks/{username}",
+              "name": "{userid}-vol",
+              "nfs": {"path": "/exports/{username}",
                       "server": os.environ.get("KUBESPAWN_NFS_SERVER")}
           },
       ]
-      c.KubeSpawner.volume_mounts = [{"name": "{username}-vol",
-                                      "mountPath": "/mnt/notebooks"} ]
+      c.KubeSpawner.volume_mounts = [{"name": "{userid}-vol",
+                                      "mountPath": "/notebooks"} ]
       c.KubeSpawner.singleuser_fs_gid = 5555
-      c.KubeSpawner.notebook_dir = "/mnt/notebooks"
+      c.KubeSpawner.notebook_dir = "/notebooks"
       c.KubeSpawner.http_timeout = 60 * 8
-
 ---
   apiVersion: extensions/v1beta1
   kind: Deployment
