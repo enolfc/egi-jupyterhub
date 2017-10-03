@@ -52,8 +52,8 @@
       c.JupyterHub.extra_log_file = "/hub/jupyterhub.log"
       # allows admin to log in to user instances
       c.JupyterHub.admin_access = True
-      # c.Authenticator.admin_users = admin = set()
-      # admin.update(os.environ["ADMIN_USERS"].split(","))
+      c.Authenticator.admin_users = admin = set()
+      admin.update(os.environ["ADMIN_USERS"].split(","))
       # c.Authenticator.whitelist = whitelist = set()
       # whitelist.update(os.environ["OAUTH_WHITELIST"].split(","))
 
