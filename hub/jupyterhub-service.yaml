@@ -36,7 +36,6 @@
     name: jupyterhub-account
     namespace: jupyterhub
 ---
----
   apiVersion: v1
   kind: ConfigMap
   metadata:
@@ -112,6 +111,7 @@
       spec:
         serviceAccountName: jupyterhub-account
         securityContext:
+          runAsUser: 1000
           fsGroup: 5555
         containers:
         - name: hub
@@ -119,7 +119,7 @@
           livenessProbe:
             exec:
               command: ["bash", "-c", "bash -c 'timeout -s 9 -k 10s 5s sed -n \"1w /mnt/jupyterhub/podhealth\" <<< \"$(date +%F_%H:%M:%S)\" && echo ok'"]
-            initialDelaySeconds: 45
+            initialDelaySeconds: 60
             timeoutSeconds: 2
             periodSeconds: 20
           ports:
@@ -133,7 +133,7 @@
           - name: JHUB_LOG_LEVEL
             value: DEBUG
           - name: KUBESPAWN_NFS_SERVER
-            value: '147.228.242.34'
+            value: '193.144.35.154'
           - name: KUBESPAWN_IMAGE
             value: 'enolfc/notebook'
           - name: KUBESPAWN_CPU_LIMIT
@@ -144,6 +144,12 @@
             value: '2G'
           - name: KUBESPAWN_MEM_REQUEST
             value: '256M'
+          - name: EGICHECKIN_HOST
+            value: 'aai-dev.egi.eu'
+          - name: EGI_CHECKIN_ENTITLEMENTS
+            value: 'urn:mace:egi.eu:aai.egi.eu:member@vo.access.egi.eu'
+          - name: ADMIN_USERS
+            value: '529a87e5ce04cd5ddd7161734d02df0e2199a11452430803e714cb1309cc3907@egi.eu'
           - name: OAUTH_CLIENT_ID
             valueFrom:
               secretKeyRef:
@@ -161,11 +167,10 @@
                 key: oauth-callback-url
           resources:
             limits:
-              cpu: 100m
-              memory: 1000M
+              memory: 3000M
             requests:
-              cpu: 100m
-              memory: 1000M
+              cpu: 200m
+              memory: 2000M
           volumeMounts:
           - name: config-volume
             mountPath: "/srv/jupyterhub/"
@@ -181,7 +186,7 @@
         - name: shared-notebooks
           nfs:
             path: "/exports"
-            server: "147.228.242.34"
+            server: "193.144.35.154"
 ---
   kind: Service
   apiVersion: v1
