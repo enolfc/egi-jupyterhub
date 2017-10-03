@@ -49,7 +49,7 @@
       c.JupyterHub.log_level = os.environ.get("JHUB_LOG_LEVEL", "DEBUG")
       c.JupyterHub.proxy_api_ip = "0.0.0.0"
       c.JupyterHub.hub_ip = "0.0.0.0"
-      c.JupyterHub.extra_log_file = "/var/log/jupyterhub.log"
+      c.JupyterHub.extra_log_file = "/hub/jupyterhub.log"
       # allows admin to log in to user instances
       c.JupyterHub.admin_access = True
       # c.Authenticator.admin_users = admin = set()
