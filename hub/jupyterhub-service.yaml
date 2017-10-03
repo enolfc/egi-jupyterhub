@@ -1,4 +1,42 @@
 ---
+  kind: ClusterRole
+  apiVersion: rbac.authorization.k8s.io/v1beta1
+  metadata:
+    name: jupyterhub-role
+  rules:
+    - apiGroups:
+        - ""
+      resources:
+        - pods
+        - services
+        - endpoints
+      verbs:
+        - get
+        - list
+        - watch
+        - create
+        - delete
+---
+  apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: jupyterhub-account
+    namespace: jupyterhub
+---
+  kind: ClusterRoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1beta1
+  metadata:
+    name: jupyterhub
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: jupyterhub-role
+  subjects:
+  - kind: ServiceAccount
+    name: jupyterhub-account
+    namespace: jupyterhub
+---
+---
   apiVersion: v1
   kind: ConfigMap
   metadata:
@@ -72,6 +110,7 @@
         labels:
           app: hub
       spec:
+        serviceAccountName: jupyterhub-account
         securityContext:
           fsGroup: 5555
         containers:
