@@ -10,6 +10,7 @@
         - pods
         - services
         - endpoints
+        - persistentvolumeclaims
       verbs:
         - get
         - list
@@ -44,7 +45,7 @@
   data:
     jupyterhub-config.py: |-
       import os
-
+  
       c.JupyterHub.log_level = os.environ.get("JHUB_LOG_LEVEL", "DEBUG")
       c.JupyterHub.proxy_api_ip = "0.0.0.0"
       c.JupyterHub.hub_ip = "0.0.0.0"
@@ -55,7 +56,7 @@
       admin.update(os.environ["ADMIN_USERS"].split(","))
       # c.Authenticator.whitelist = whitelist = set()
       # whitelist.update(os.environ["OAUTH_WHITELIST"].split(","))
-
+  
       # Authentication
       c.JupyterHub.authenticator_class = "oauthenticator.EGICheckInOAuthenticator"
       c.EGICheckInOAuthenticator.client_id = os.environ.get("OAUTH_CLIENT_ID", "")
@@ -63,32 +64,37 @@
           "OAUTH_CLIENT_SECRET", "")
       c.EGICheckInOAuthenticator.oauth_callback_url = os.environ.get(
           "OAUTH_CALLBACK_URL", "")
-
+  
       # Spawner Options
       c.JupyterHub.spawner_class = "kubespawner.KubeSpawner"
       c.JupyterHub.cleanup_servers = False
-
+  
       c.KubeSpawner.start_timeout = 60 * 8
-
+  
       c.KubeSpawner.debug = os.environ.get("JHUB_SPWN_DEBUG", "") == "TRUE"
       c.KubeSpawner.pod_name_template = "notebook-{userid}"
       c.KubeSpawner.hub_connect_ip = os.environ.get("KSPAWN_HUB_IP", None)
       c.KubeSpawner.namespace = "jupyterhub"
       c.KubeSpawner.singleuser_image_spec = os.environ.get("KUBESPAWN_IMAGE",
                                                            None)
-
+  
       c.KubeSpawner.use_options_form = False
       #c.KubeSpawner.cpu_limit = os.environ.get("KUBESPAWN_CPU_LIMIT", None)
       #c.KubeSpawner.cpu_request = os.environ.get("KUBESPAWN_CPU_REQUEST", None)
       #c.KubeSpawner.mem_limit = os.environ.get("KUBESPAWN_MEM_LIMIT", None)
       #c.KubeSpawner.mem_request = os.environ.get("KUBESPAWN_MEM_REQUEST", None)
-      c.KubeSpawner.create_user_volume_locally = True
+      c.KubeSpawner.create_user_volume_locally = False 
+      c.KubeSpawner.user_storage_pvc_ensure = True
+      c.KubeSpawner.pvc_name_template = "pvc-{userid}" 
+      c.KubeSpawner.user_storage_class = "managed-nfs-storage"
+      c.KubeSpawner.user_storage_access_modes = ["ReadWriteMany"]
+      c.KubeSpawner.user_storage_capacity = "1Gi"
+
       c.KubeSpawner.volumes = [
           # the notebook dir
           {
               "name": "{userid}-vol",
-              "nfs": {"path": "/exports/{username}",
-                      "server": os.environ.get("KUBESPAWN_NFS_SERVER")}
+              "persistentVolumeClaim": { "claimName": "pvc-{userid}" }
           },
       ]
       c.KubeSpawner.volume_mounts = [{"name": "{userid}-vol",
@@ -110,18 +116,15 @@
           app: hub
       spec:
         serviceAccountName: jupyterhub-account
-        securityContext:
-          runAsUser: 1000
-          fsGroup: 5555
         containers:
         - name: hub
           image: enolfc/jupyterhub:latest
-          livenessProbe:
-            exec:
-              command: ["bash", "-c", "bash -c 'timeout -s 9 -k 10s 5s sed -n \"1w /mnt/jupyterhub/podhealth\" <<< \"$(date +%F_%H:%M:%S)\" && echo ok'"]
-            initialDelaySeconds: 60
-            timeoutSeconds: 2
-            periodSeconds: 20
+#          livenessProbe:
+#            exec:
+#              command: ["bash", "-c", "bash -c 'timeout -s 9 -k 10s 5s sed -n \"1w /mnt/jupyterhub/podhealth\" <<< \"$(date +%F_%H:%M:%S)\" && echo ok'"]
+#            initialDelaySeconds: 60
+#            timeoutSeconds: 2
+#            periodSeconds: 20
           ports:
           - containerPort: 8081
           - containerPort: 8000
@@ -132,9 +135,10 @@
             value: "TRUE"
           - name: JHUB_LOG_LEVEL
             value: DEBUG
-          - name: KUBESPAWN_NFS_SERVER
-            value: '193.144.35.154'
+#          - name: KUBESPAWN_NFS_SERVER
+#            value: '193.144.35.154'
           - name: KUBESPAWN_IMAGE
+#value: 'jupyterhub/singleuser:0.8'
             value: 'enolfc/notebook'
           - name: KUBESPAWN_CPU_LIMIT
             value: '3000'
@@ -174,8 +178,8 @@
           volumeMounts:
           - name: config-volume
             mountPath: "/srv/jupyterhub/"
-          - name: shared-notebooks
-            mountPath: /mnt/jupyterhub
+#          - name: shared-notebooks
+#            mountPath: /mnt/jupyterhub
         volumes:
         - name: config-volume
           configMap:
@@ -183,10 +187,10 @@
             items:
               - key: jupyterhub-config.py
                 path: jupyterhub_config.py
-        - name: shared-notebooks
-          nfs:
-            path: "/exports"
-            server: "193.144.35.154"
+#        - name: shared-notebooks
+#          nfs:
+#            path: "/exports"
+#            server: "193.144.35.154"
 ---
   kind: Service
   apiVersion: v1
