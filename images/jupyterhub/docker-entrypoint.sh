@@ -14,7 +14,7 @@
 # limitations under the License.
 set -e
 #allows the use of a remote file system
-SHARED_PATH=${SHARED_PATH:-'/opt'}
+SHARED_PATH=${SHARED_PATH:-'/hub'}
 
 if [ ! -f ${SHARED_PATH}/cookie.secret ]; then
   #generate unique keys for this deployment
@@ -24,4 +24,4 @@ fi
 cd ${SHARED_PATH}
 export JPY_COOKIE_SECRET="$(cat ${SHARED_PATH}/cookie.secret)"
 export CONFIGPROXY_AUTH_TOKEN="$(cat ${SHARED_PATH}/configproxy.token)"
-exec sh -c "jupyterhub --no-ssl -f /srv/jupyterhub/jupyterhub_config.py 2>&1 | tee /var/log/jupyterhub2.log"
+exec sh -c "/opt/conda/bin/jupyterhub --no-ssl -f /srv/jupyterhub/jupyterhub_config.py 2>&1 | tee /hub/jupyterhub2.log"
