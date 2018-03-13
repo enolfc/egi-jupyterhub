@@ -6,5 +6,4 @@ Uses helm charts provided by jupyterhub project at https://jupyterhub.github.io/
 
 It manages these:
 - catch-all jupyterhub: https://jupyterhub.fedcloud-tf.fedcloud.eu/
-- aginfra+ hub: https://aginfrahub.fedcloud-tf.fedcloud.eu/
-- binderhub: https://binderhub.fedcloud-tf.fedcloud.eu
+- aginfra+ hub: https://aginfra-notebooks.fedcloud-tf.fedcloud.eu/
