@@ -1,0 +1,62 @@
+#
+# this is included in the secrets as helm does not merge config files
+#proxy:
+#  service:
+#    type: NodePort
+
+hub:
+  image:
+    name: enolfc/aginfrahub
+    tag: v0.1 
+  db:
+    pvc:
+      annotations: {volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"}
+  extraConfig: |-
+   from kubespawner import KubeSpawner
+
+   class AginfraSpawner(KubeSpawner):
+       def get_args(self):
+           args = super().get_args()
+           return [
+               ('--SingleUserNotebookApp.tornado_settings='
+                '{"headers": {"Content-Security-Policy": '
+                '"frame-ancestors https://*.d4science.org \'self\'"}}')
+              ] + args
+
+   c.JupyterHub.spawner_class = AginfraSpawner
+
+   #  headers to allow this to be embedded in an iframe
+   c.JupyterHub.tornado_settings = {
+       'headers': {
+           'Content-Security-Policy': ("frame-ancestors "
+                                       "https://*.d4science.org "
+                                       "'self'"),
+       },
+   }
+
+ingress:
+  enabled: true
+  annotations: {kubernetes.io/ingress.class: traefik}
+  hosts: [aginfra-notebooks.fedcloud-tf.fedcloud.eu]
+
+singleuser:
+  lifecycleHooks:
+    postStart:
+      exec: { "command": ["/bin/sh", "-c", "ln -s /persistent $HOME/persistent"]}
+  storage:
+    capacity: 1Gi
+    homeMountPath: /persistent
+    dynamic:
+      storageClass: "managed-nfs-storage"
+      pvcNameTemplate: claim-{username}{servername}
+      volumeNameTemplate: vol-{username}{servername}
+      storageAccessModes: ["ReadWriteMany"]
+
+# EGI CheckIn Auth
+auth:
+  type: custom
+  admin:
+    access: true
+    users: [enol.fernandez]
+  custom:
+    className: oauthenticator.d4science.D4ScienceAuthenticator
