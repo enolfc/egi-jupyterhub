@@ -1,0 +1,54 @@
+#
+# this is included in the secrets as helm does not merge config files
+# EGI Check-in configuration is also in secrets
+#proxy:
+#  service:
+#    type: NodePort
+
+hub:
+  extraEnv:
+    OAUTH2_AUTHORIZE_URL: https://aai-dev.egi.eu/oidc/authorize
+    OAUTH2_TOKEN_URL: https://aai-dev.egi.eu/oidc/token
+  db:
+    pvc:
+      annotations: {volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"}
+  extraConfig: |-
+   #c.KubeSpawner.user_storage_access_modes = ["ReadWriteMany"]
+   # c.KubeSpawner.user_storage_access_modes = ["ReadWriteMany"]
+   # c.KubeSpawner.user_storage_class = "managed-nfs-storage"
+   # c.KubeSpawner.user_storage_capacity = "1Gi"
+
+   from kubespawner import KubeSpawner
+
+   class EGISpawner(KubeSpawner):
+     def get_pvc_manifest(self):
+         self.log.info("%s %s %s %s %s %s",
+            self.pvc_name,
+            self.user_storage_class,
+            self.user_storage_access_modes,
+            self.user_storage_capacity)
+         return super().get_pvc_manifest()
+
+
+   #c.JupyterHub.spawner_class = EGISpawner
+#  image:
+#    name: enolfc/helmhub
+#    tag: latest
+
+ingress:
+  enabled: true
+  annotations: {kubernetes.io/ingress.class: traefik}
+  hosts: [jupyterhelm.fedcloud-tf.fedcloud.eu]
+
+singleuser:
+  lifecycleHooks:
+    postStart:
+      exec: { "command": ["/bin/sh", "-c", "ln -s /persistent $HOME/persistent"]}
+  storage:
+    capacity: 1Gi
+    homeMountPath: /persistent
+    dynamic:
+      storageClass: "managed-nfs-storage"
+      pvcNameTemplate: claim-{userid}{servername}
+      volumeNameTemplate: vol-{userid}{servername}
+      storageAccessModes: ["ReadWriteMany"]
